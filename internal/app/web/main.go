@@ -2,12 +2,12 @@ package web
 
 import (
 	"app_burse_backend/configs"
+	"app_burse_backend/pkg/logger"
 	"app_burse_backend/pkg/postgres"
 	"app_burse_backend/pkg/queue/producer"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -30,7 +30,6 @@ func NewWebContext(config *configs.Config) *WebContext {
 }
 
 func (c *WebContext) InitDB() {
-	fmt.Println("sfdf")
 	c.db = postgres.NewPostgres().Connect(c.config.DBHost, c.config.DBPort, "user", "pass", "postgres")
 
 	c.db.MustExec(`
@@ -52,25 +51,8 @@ func (c *WebContext) InitDB() {
 	);`)
 }
 
-func (c *WebContext) InitLogger() error {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal("Failed to get current directory")
-	}
-
-	logConfig := zap.NewProductionConfig()
-	logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-	logConfig.Development = true
-	logConfig.OutputPaths = []string{"stdout", pwd + "/logs/app.log"}
-	logConfig.Encoding = "json"
-
-	log, err := logConfig.Build()
-	if err != nil {
-		log.Fatal("Failed to initialize logger")
-	}
-
-	c.log = log
-	return nil
+func (c *WebContext) InitLogger() {
+	c.log = logger.NewLogger(logger.WithDevelopment(true), logger.WithLevel(zap.DebugLevel)).Build()
 }
 
 func (c *WebContext) InitProducer() error {

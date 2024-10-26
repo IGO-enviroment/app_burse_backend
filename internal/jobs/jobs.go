@@ -1,4 +1,4 @@
-package deamon
+package jobs
 
 import (
 	"app_burse_backend/pkg/queue/consumer"

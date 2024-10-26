@@ -2,11 +2,11 @@ package deamon
 
 import (
 	"app_burse_backend/configs"
+	"app_burse_backend/internal/jobs"
+	"app_burse_backend/pkg/logger"
 	"app_burse_backend/pkg/postgres"
 	"app_burse_backend/pkg/queue/consumer"
 	"context"
-	"log"
-	"os"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -15,7 +15,7 @@ import (
 
 type Deamon struct {
 	config   *configs.Config
-	log      zap.Logger
+	log      *zap.Logger
 	db       *sqlx.DB
 	consumer *consumer.Consumer
 }
@@ -27,32 +27,18 @@ func NewInstance(config *configs.Config) *Deamon {
 }
 
 func (d *Deamon) Setup() error {
+	// Подключение к базе данных
 	d.db = postgres.NewPostgres().Connect(d.config.DBHost, d.config.DBPort, "user", "pass", "postgres")
 
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal("Failed to get current directory")
-	}
-
-	logConfig := zap.NewProductionConfig()
-	logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-	logConfig.Development = true
-	logConfig.OutputPaths = []string{"stdout", pwd + "/logs/app.log"}
-	logConfig.Encoding = "json"
-
-	log, err := logConfig.Build()
-	if err != nil {
-		log.Fatal("Failed to initialize logger")
-	}
-
-	d.log = *log
+	// Загрузка конфигурации логгера
+	d.log = logger.NewLogger(logger.WithDevelopment(true), logger.WithLevel(zap.DebugLevel)).Build()
 
 	// Загрузка конфигурации очереди
 	d.consumer = consumer.NewConsumer(
 		consumer.WithDB(d.db),
-		consumer.WithLogger(&d.log),
+		consumer.WithLogger(d.log),
 	)
-	RegisterJobs(d.consumer)
+	jobs.RegisterJobs(d.consumer)
 
 	return nil
 }
