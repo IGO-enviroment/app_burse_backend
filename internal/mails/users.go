@@ -1,63 +1,40 @@
 package mails
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
-	"net/smtp"
+	"os"
 
 	"go.uber.org/zap"
 )
 
-type Option func(*UserMailer)
-
-func WithLogger(logger *zap.Logger) Option {
-	return func(m *UserMailer) {
-		m.log = logger
-	}
-}
-
-func WithDefaultSMTP(host, user, password string, port int) Option {
-	return func(m *UserMailer) {
-		m.host = host
-		m.user = user
-		m.password = password
-		m.port = port
-	}
-}
-
-func WithFrom(from string) Option {
-	return func(m *UserMailer) {
-		m.from = from
-	}
-}
-
-const defaultLayout = "layouts/users.html"
+const usersLayout = "internal/mails/layout/users.html"
+const usersTemplatePath = "internal/mails/users"
 
 type UserMailer struct {
-	templatePath string
-	layout       string
-	from         string
-
-	password string
-	host     string
-	port     int
-	user     string
+	mailer Mailer
 
 	log *zap.Logger
 }
 
-func NewUserMailer(opts ...Option) *UserMailer {
-	m := &UserMailer{
-		templatePath: "users",
-		layout:       defaultLayout,
+func NewUserMailer(log *zap.Logger) (*UserMailer, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
 	}
 
-	for _, opt := range opts {
-		opt(m)
+	mailer, err := NewBaseMailer(
+		WithLayout(fmt.Sprintf("%s/%s", pwd, usersLayout)),
+		WithTemplatePath(fmt.Sprintf("%s/%s", pwd, usersTemplatePath)),
+		WithLogger(log),
+	)
+	if err != nil {
+		return nil, err
 	}
 
-	return m
+	return &UserMailer{
+		mailer: mailer,
+		log:    log,
+	}, nil
 }
 
 func (m *UserMailer) SendVerificationEmail(to, subject, body string) error {
@@ -87,44 +64,12 @@ type SendWelcomeEmailData struct {
 
 // Отправка приветственного письма
 func (m *UserMailer) SendWelcomeEmail(to []string, data SendWelcomeEmailData) error {
-	body, err := m.parseTemplate("send_welcome_email.html", data, true)
+	const fileName = "send_welcome_email.html"
+
+	body, err := m.mailer.ParseTemplate(fileName, data, true)
 	if err != nil {
 		return err
 	}
 
-	return m.sendEmail(to, &body)
-}
-
-// Отправка письма с использованием SMTP протокола.
-func (m *UserMailer) sendEmail(to []string, body *[]byte) error {
-	auth := smtp.PlainAuth("", m.user, m.password, m.host)
-	err := smtp.SendMail(fmt.Sprintf("%s:%d", m.host, m.port), auth, m.from, to, *body)
-
-	if err != nil {
-		m.log.Fatal("Ошибка при отправке письма")
-	}
-
-	return nil
-}
-
-func (m *UserMailer) parseTemplate(fileName string, data any, logErrors bool) ([]byte, error) {
-	const logPrefix = "[UserMailer.parseTemplate]"
-
-	tmpl, err := template.ParseFiles(m.templatePath+"/"+fileName, m.layout)
-	if err != nil {
-		if logErrors {
-			m.log.Fatal(fmt.Sprintf("%s Ошибка при парсинг шаблона", logPrefix))
-		}
-		return nil, err
-	}
-
-	var body bytes.Buffer
-	if err := tmpl.Execute(&body, data); err != nil {
-		if logErrors {
-			m.log.Fatal(fmt.Sprintf("%s Ошибка при выполнении шаблона", logPrefix))
-		}
-		return nil, err
-	}
-
-	return body.Bytes(), nil
+	return m.mailer.Send(to, &body, fileName)
 }
