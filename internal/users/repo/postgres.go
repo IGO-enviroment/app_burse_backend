@@ -18,7 +18,18 @@ func NewRepository(db *sqlx.DB) *Repository {
 func (r *Repository) GetById(id int) (*domain.User, error) {
 	var user domain.User
 
-	err := service.GetById(r.db, id, domain.UserTable, &user)
+	err := service.GetByField(r.db, "id", id, domain.UserTable, &user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *Repository) GetUserByEmail(email string) (*domain.User, error) {
+	var user domain.User
+
+	err := service.GetByField(r.db, domain.UserTable, "email", email, &user)
 	if err != nil {
 		return nil, err
 	}

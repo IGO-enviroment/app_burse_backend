@@ -12,13 +12,17 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
+	"golang.org/x/text/language"
+	"gopkg.in/yaml.v3"
 )
 
 type WebContext struct {
-	db     *sqlx.DB
-	config *configs.Config
-	log    *zap.Logger
+	db        *sqlx.DB
+	config    *configs.Config
+	log       *zap.Logger
+	localizer *i18n.Localizer
 
 	producer *producer.Producer
 }
@@ -31,28 +35,20 @@ func NewWebContext(config *configs.Config) *WebContext {
 
 func (c *WebContext) InitDB() {
 	c.db = postgres.NewPostgres().Connect(c.config.DBHost, c.config.DBPort, "user", "pass", "postgres")
-
-	c.db.MustExec(`
-	DROP TABLE IF EXISTS queue_jobs;
-
-	CREATE TABLE IF NOT EXISTS queue_jobs (
-    id SERIAL PRIMARY KEY,
-
-		reserv_at TIMESTAMP,
-
-		processed BOOLEAN DEFAULT false,
-    queue_name VARCHAR(255) NOT NULL,
-    run_at TIMESTAMP,
-	
-		method VARCHAR(255) NOT NULL,
-		item TEXT NOT NULL,
-
-    created_at TIMESTAMP DEFAULT NOW()
-	);`)
 }
 
 func (c *WebContext) InitLogger() {
 	c.log = logger.NewLogger(logger.WithDevelopment(true), logger.WithLevel(zap.DebugLevel)).Build()
+}
+
+func (c *WebContext) InitLocales() {
+	// Load locales
+	bundle := i18n.NewBundle(language.Russian)
+	bundle.RegisterUnmarshalFunc("yml", yaml.Unmarshal)
+
+	bundle.MustLoadMessageFile("locales/ru.yml")
+
+	c.localizer = i18n.NewLocalizer(bundle, "ru-RU")
 }
 
 func (c *WebContext) InitProducer() error {
@@ -101,4 +97,8 @@ func (c *WebContext) Logger() *zap.Logger {
 
 func (c *WebContext) Configs() *configs.Config {
 	return c.config
+}
+
+func (c *WebContext) Locales() *i18n.Localizer {
+	return c.localizer
 }

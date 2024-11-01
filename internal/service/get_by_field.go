@@ -7,14 +7,23 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func GetById(db *sqlx.DB, id int, table string, scanStruct interface{}) (err error) {
+func GetByField(
+	db *sqlx.DB,
+	field,
+	value interface{},
+	table string,
+	scanStruct interface{},
+) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered in f", r)
 		}
 	}()
 
-	err = db.QueryRow(fmt.Sprintf("SELECT * FROM %s WHERE id = $1", table), id).Scan(scanStruct)
+	err = db.QueryRow(
+		fmt.Sprintf("SELECT * FROM %s WHERE %s = $1", table, field),
+		value,
+	).Scan(scanStruct)
 	if err == sql.ErrNoRows {
 		return fmt.Errorf("record not found")
 	} else if err != nil {
