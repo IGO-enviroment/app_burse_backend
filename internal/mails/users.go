@@ -17,6 +17,21 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
+func WithDefaultSMTP(host, user, password string, port int) Option {
+	return func(m *UserMailer) {
+		m.host = host
+		m.user = user
+		m.password = password
+		m.port = port
+	}
+}
+
+func WithFrom(from string) Option {
+	return func(m *UserMailer) {
+		m.from = from
+	}
+}
+
 const defaultLayout = "layouts/users.html"
 
 type UserMailer struct {
@@ -61,13 +76,18 @@ func (m *UserMailer) SendPasswordChangeEmail(to, subject, body string) error {
 }
 
 type SendWelcomeEmailData struct {
-	email string
+	Email    string
+	Name     string
+	Password string
+
+	LinkChangePassword string
+	LinkLogin          string
+	LinkToProfile      string
 }
 
+// Отправка приветственного письма
 func (m *UserMailer) SendWelcomeEmail(to []string, data SendWelcomeEmailData) error {
-	const fileName = "send_welcome_email.html"
-
-	body, err := m.parseTemplate(fileName, data)
+	body, err := m.parseTemplate("send_welcome_email.html", data, true)
 	if err != nil {
 		return err
 	}
@@ -87,16 +107,22 @@ func (m *UserMailer) sendEmail(to []string, body *[]byte) error {
 	return nil
 }
 
-func (m *UserMailer) parseTemplate(fileName string, data any) ([]byte, error) {
+func (m *UserMailer) parseTemplate(fileName string, data any, logErrors bool) ([]byte, error) {
+	const logPrefix = "[UserMailer.parseTemplate]"
+
 	tmpl, err := template.ParseFiles(m.templatePath+"/"+fileName, m.layout)
 	if err != nil {
-		m.log.Fatal("Ошибка при парсинг шаблона")
+		if logErrors {
+			m.log.Fatal(fmt.Sprintf("%s Ошибка при парсинг шаблона", logPrefix))
+		}
 		return nil, err
 	}
 
 	var body bytes.Buffer
 	if err := tmpl.Execute(&body, data); err != nil {
-		m.log.Fatal("Ошибка при выполнении шаблона")
+		if logErrors {
+			m.log.Fatal(fmt.Sprintf("%s Ошибка при выполнении шаблона", logPrefix))
+		}
 		return nil, err
 	}
 
