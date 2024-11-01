@@ -7,26 +7,26 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type Delivery struct {
+	appContext app.AppContext
+}
+
 func SetupRoutes(router *mux.Router, appContext app.AppContext) {
+	users := router.PathPrefix("/v1").Subrouter().PathPrefix("/users").Subrouter()
+	delivery := &Delivery{appContext: appContext}
 
-	v1 := router.PathPrefix("/v1").Subrouter()
+	users.HandleFunc("/me", delivery.GetMe).Methods("GET")
+	users.HandleFunc("/login", delivery.Login).Methods("POST")
+}
 
-	// ... setup v1 routes here
-	v1.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-		// Handle user requests
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("User List"))
-	}).Methods("GET")
+func (d *Delivery) GetMe(w http.ResponseWriter, r *http.Request) {
+	// Handle user requests
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("User List"))
+}
 
-	v1.HandleFunc("/users/{id}", func(w http.ResponseWriter, r *http.Request) {
-		// Handle user requests by ID
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("User Details"))
-	}).Methods("GET")
-
-	v1.HandleFunc("/users/me", func(w http.ResponseWriter, r *http.Request) {
-		// Handle user requests by current user
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("User Profile"))
-	}).Methods("GET")
+func (d *Delivery) Login(w http.ResponseWriter, r *http.Request) {
+	// Handle user login requests
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("User Login"))
 }
