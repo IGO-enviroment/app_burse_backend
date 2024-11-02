@@ -1,4 +1,4 @@
-package web_midlleware
+package midlleware
 
 import (
 	"app_burse_backend/internal/app"
@@ -25,5 +25,7 @@ func (mw *Middlewares) NotLoggedInMiddleware(next http.HandlerFunc) http.Handler
 }
 
 func (mw *Middlewares) isLoggedIn(r *http.Request) bool {
+	token := r.Header.Get("Authorization")
+
 	return true
 }

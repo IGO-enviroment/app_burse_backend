@@ -2,6 +2,7 @@ package v1
 
 import (
 	"app_burse_backend/internal/app"
+	midlleware "app_burse_backend/internal/middleware"
 	users_entity "app_burse_backend/internal/users/entity"
 	users_repository "app_burse_backend/internal/users/repo"
 	users_usecase "app_burse_backend/internal/users/usecase"
@@ -20,8 +21,16 @@ func SetupRoutes(router *mux.Router, appContext app.AppContext) {
 	users := router.PathPrefix("/v1").Subrouter().PathPrefix("/users").Subrouter()
 	delivery := &Delivery{appContext: appContext}
 
-	users.HandleFunc("/me", delivery.GetMe).Methods("GET")
-	users.HandleFunc("/login", delivery.Login).Methods("POST")
+	middlware := midlleware.NewMiddlewares(appContext)
+
+	users.HandleFunc(
+		"/me",
+		delivery.GetMe,
+	).Methods("GET")
+	users.HandleFunc(
+		"/login",
+		middlware.NotLoggedInMiddleware(delivery.Login),
+	).Methods("POST")
 }
 
 func (d *Delivery) GetMe(w http.ResponseWriter, r *http.Request) {
