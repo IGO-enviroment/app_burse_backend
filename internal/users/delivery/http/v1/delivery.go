@@ -17,7 +17,7 @@ func SetupRoutes(router *mux.Router, appContext app.AppContext) {
 	users := router.PathPrefix("/v1").Subrouter().PathPrefix("/users").Subrouter()
 	delivery := NewDelivery(appContext)
 
-	middlware := midlleware.NewMiddlewares(appContext)
+	middlware := midlleware.NewMiddleware(appContext)
 
 	users.HandleFunc(
 		"/me",

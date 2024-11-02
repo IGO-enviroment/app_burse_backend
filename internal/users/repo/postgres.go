@@ -3,6 +3,7 @@ package users_repository
 import (
 	"app_burse_backend/internal/domain"
 	"app_burse_backend/internal/service"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -35,4 +36,22 @@ func (r *Repository) GetUserByEmail(email string) (*domain.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (r *Repository) Create(fields []service.FieldDB) (int, error) {
+	mapper := service.NewMapperFields(fields...)
+	res, err := r.db.Exec(
+		fmt.Sprintf("INSERT INTO users (%s) VALUES (%s)", mapper.GetColumnNames(), mapper.GetPlaceholders()),
+		mapper.GetValues()...,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id), nil
 }

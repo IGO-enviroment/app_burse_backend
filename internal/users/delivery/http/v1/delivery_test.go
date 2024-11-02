@@ -4,7 +4,9 @@ import (
 	"app_burse_backend/configs"
 	"app_burse_backend/internal/app/web"
 	"app_burse_backend/internal/domain"
+	"app_burse_backend/internal/service"
 	v1 "app_burse_backend/internal/users/delivery/http/v1"
+	users_repository "app_burse_backend/internal/users/repo"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -50,7 +52,15 @@ func TestLogin(t *testing.T) {
 		request := map[string]string{"email": "test@example.com", "password": "test"}
 		user := &domain.User{Email: request["email"]}
 		user.SetPassword(request["password"])
-		connect.Exec("INSERT INTO users (email, password) VALUES ($1, $2)", user.Email, user.DigestPassword)
+		_, err := users_repository.NewRepository(app.DB()).Create(
+			[]service.FieldDB{
+				{Name: "email", Value: user.Email},
+				{Name: "password", Value: user.DigestPassword},
+			},
+		)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
 
 		res := mockRequest(request)
 
