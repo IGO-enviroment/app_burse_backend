@@ -13,13 +13,9 @@ import (
 	"go.uber.org/zap"
 )
 
-type Delivery struct {
-	appContext app.AppContext
-}
-
 func SetupRoutes(router *mux.Router, appContext app.AppContext) {
 	users := router.PathPrefix("/v1").Subrouter().PathPrefix("/users").Subrouter()
-	delivery := &Delivery{appContext: appContext}
+	delivery := NewDelivery(appContext)
 
 	middlware := midlleware.NewMiddlewares(appContext)
 
@@ -31,6 +27,14 @@ func SetupRoutes(router *mux.Router, appContext app.AppContext) {
 		"/login",
 		middlware.NotLoggedInMiddleware(delivery.Login),
 	).Methods("POST")
+}
+
+type Delivery struct {
+	appContext app.AppContext
+}
+
+func NewDelivery(appContext app.AppContext) *Delivery {
+	return &Delivery{appContext: appContext}
 }
 
 func (d *Delivery) GetMe(w http.ResponseWriter, r *http.Request) {

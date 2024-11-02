@@ -2,11 +2,10 @@ package users_usecase
 
 import (
 	"app_burse_backend/internal/app"
-	"app_burse_backend/internal/service"
+	types_result "app_burse_backend/internal/types/result"
 	users_entity "app_burse_backend/internal/users/entity"
 	users_repository "app_burse_backend/internal/users/repo"
 	tokenservice "app_burse_backend/pkg/token_service"
-	"errors"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -22,18 +21,18 @@ func NewLoginUsecase(repo users_repository.Repository, entity users_entity.Login
 	return &LoginUsecase{repo: repo, entity: entity, app: app}
 }
 
-func (u *LoginUsecase) Call() service.Result {
+func (u *LoginUsecase) Call() types_result.Result {
 	user, err := u.repo.GetUserByEmail(u.entity.Email)
 	if err != nil {
-		return service.NewErrorResult(
-			errors.New(u.app.Locales().MustLocalize(&i18n.LocalizeConfig{MessageID: "errors.unknown_error"})),
+		return types_result.NewErrorResult(
+			types_result.ErrorWithMsg(u.app.Locales().MustLocalize(&i18n.LocalizeConfig{MessageID: "errors.unknown_error"})),
 		)
 	}
 
 	// Check if password matches
 	if !user.CheckPassword(u.entity.Password, user.DigestPassword) {
-		return service.NewErrorResult(
-			errors.New(u.app.Locales().MustLocalize(&i18n.LocalizeConfig{
+		return types_result.NewErrorResult(
+			types_result.ErrorWithMsg(u.app.Locales().MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "users.errors.login.invalid_credentials",
 			})),
 		)
@@ -41,12 +40,12 @@ func (u *LoginUsecase) Call() service.Result {
 
 	token, err := u.generateHeaderToken(user.ID)
 	if err != nil {
-		return service.NewErrorResult(
-			errors.New(u.app.Locales().MustLocalize(&i18n.LocalizeConfig{MessageID: "errors.unknown_error"})),
+		return types_result.NewErrorResult(
+			types_result.ErrorWithMsg(u.app.Locales().MustLocalize(&i18n.LocalizeConfig{MessageID: "errors.unknown_error"})),
 		)
 	}
 
-	return service.NewSuccessResult(token)
+	return types_result.NewSuccessResult(token)
 }
 
 func (u *LoginUsecase) generateHeaderToken(userID int) (string, error) {
