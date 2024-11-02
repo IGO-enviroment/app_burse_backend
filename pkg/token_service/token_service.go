@@ -32,17 +32,17 @@ func (s *TokenService) GenerateToken(userID int) (string, error) {
 	return tokenString, nil
 }
 
-func (s *TokenService) VerifyToken(tokenString string) (*jwt.Token, error) {
+func (s *TokenService) VerifyToken(tokenString string) (*jwt.Token, bool) {
 	token, err := s.ParseToken(tokenString)
 	if err != nil {
-		return nil, err
+		return nil, false
 	}
 
 	if !token.Valid {
-		return nil, errors.New("invalid token")
+		return nil, false
 	}
 
-	return token, nil
+	return token, true
 }
 
 func (s *TokenService) ParseToken(tokenString string) (*jwt.Token, error) {

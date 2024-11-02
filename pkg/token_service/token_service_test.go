@@ -26,13 +26,13 @@ func TestGenerateToken_ValidUserID(t *testing.T) {
 		t.Fatalf("expected a token, got an empty string")
 	}
 
-	parsedToken, err := tokenService.VerifyToken(token)
-	if err != nil {
-		t.Fatalf("expected token to be valid, got error %v", err)
+	parsedToken, ok := tokenService.VerifyToken(token)
+	if !ok {
+		t.Fatalf("expected token to be valid, got error %v", ok)
 	}
 
-	claims, ok := parsedToken.Claims.(*jwt.MapClaims)
-	if !ok {
+	claims, parsed := parsedToken.Claims.(*jwt.MapClaims)
+	if !parsed {
 		t.Fatalf("expected claims to be of type jwt.MapClaims, got %T", parsedToken.Claims)
 	}
 

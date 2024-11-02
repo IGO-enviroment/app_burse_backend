@@ -2,6 +2,7 @@ package midlleware
 
 import (
 	"app_burse_backend/internal/app"
+	tokenservice "app_burse_backend/pkg/token_service"
 	"net/http"
 )
 
@@ -24,8 +25,17 @@ func (mw *Middlewares) NotLoggedInMiddleware(next http.HandlerFunc) http.Handler
 	}
 }
 
+// Проверка авторизации пользователя.
+// Возвращает true, если токен валидный, иначе false.
 func (mw *Middlewares) isLoggedIn(r *http.Request) bool {
-	token := r.Header.Get("Authorization")
+	cfg := mw.app.Configs().Web
 
-	return true
+	service := tokenservice.NewTokenService(cfg.TokenSecret, cfg.TokenExpiration)
+	token, err := service.TokenFromRequest(r)
+	if err != nil || token == "" {
+		return false
+	}
+
+	_, ok := service.VerifyToken(token)
+	return ok
 }
