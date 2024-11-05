@@ -18,7 +18,7 @@ func NewLogger(options ...Option) *Logger {
 
 	p.zapConfig.Level = zap.NewAtomicLevelAt(zap.ErrorLevel)
 	p.zapConfig.Development = false
-	p.zapConfig.OutputPaths = []string{p.pwd() + "./logs/app.log"}
+	p.zapConfig.OutputPaths = []string{p.pwd() + "/" + "logs/app.log"}
 
 	for _, option := range options {
 		option(p)
@@ -34,7 +34,7 @@ func NewLogger(options ...Option) *Logger {
 func (l *Logger) Build() *zap.Logger {
 	log, err := l.zapConfig.Build()
 	if err != nil {
-		log.Fatal("Failed to initialize logger")
+		panic(err)
 	}
 
 	return log

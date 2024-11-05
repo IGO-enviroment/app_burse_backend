@@ -58,7 +58,7 @@ func TestLogin(t *testing.T) {
 		_, err := users_repository.NewRepository(app.DB()).Create(
 			[]service.FieldDB{
 				{Name: "email", Value: user.Email},
-				{Name: "password", Value: user.DigestPassword},
+				{Name: "digest_password", Value: user.DigestPassword},
 			},
 		)
 		if err != nil {

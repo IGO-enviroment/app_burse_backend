@@ -1,8 +1,6 @@
 package configs
 
 import (
-	"fmt"
-
 	"github.com/spf13/viper"
 )
 
@@ -47,10 +45,6 @@ func (c *Config) LoadForTest(currentPwd string) *Config {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println("Testing configs loaded")
-
-	fmt.Println(*c)
 
 	return c
 }
