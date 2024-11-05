@@ -34,19 +34,21 @@ func NewWebContext(config *configs.Config) *WebContext {
 }
 
 func (c *WebContext) InitDB() {
-	c.db = postgres.NewPostgres().Connect(c.config.DBHost, c.config.DBPort, "user", "pass", "postgres")
+	c.db = postgres.NewPostgres().Connect(
+		c.config.DB.Host, c.config.DB.Port, c.config.DB.Username, c.config.DB.Password, c.config.DB.Name,
+	)
 }
 
 func (c *WebContext) InitLogger() {
 	c.log = logger.NewLogger(logger.WithDevelopment(true), logger.WithLevel(zap.DebugLevel)).Build()
 }
 
-func (c *WebContext) InitLocales() {
+func (c *WebContext) InitLocales(currentPwd string) {
 	// Load locales
 	bundle := i18n.NewBundle(language.Russian)
 	bundle.RegisterUnmarshalFunc("yml", yaml.Unmarshal)
 
-	bundle.MustLoadMessageFile("locales/ru.yml")
+	bundle.MustLoadMessageFile(currentPwd + "./configs/locales/ru.yml")
 
 	c.localizer = i18n.NewLocalizer(bundle, "ru-RU")
 }

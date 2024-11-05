@@ -1,6 +1,8 @@
 package middlleware_test
 
 import (
+	"app_burse_backend/configs"
+	"app_burse_backend/internal/app/web"
 	middlleware "app_burse_backend/internal/middleware"
 	tokenservice "app_burse_backend/pkg/token_service"
 	"net/http"
@@ -11,8 +13,12 @@ import (
 )
 
 func TestNotLoggedIn(t *testing.T) {
+	pwd := "../../"
+	cfg := configs.NewCondfig().LoadForTest(pwd)
+	app := web.NewWebContext(cfg)
+
 	t.Run("Вернет 401 при отсутствии токена", func(t *testing.T) {
-		mw := middlleware.NewMiddleware(nil) // TODO: Create a mock app context for testing
+		mw := middlleware.NewMiddleware(app) // TODO: Create a mock app context for testing
 		next := func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}
@@ -26,7 +32,7 @@ func TestNotLoggedIn(t *testing.T) {
 	})
 
 	t.Run("Продолжит обработку запроса при валидном токене", func(t *testing.T) {
-		mw := middlleware.NewMiddleware(nil) // TODO: Create a mock app context for testing
+		mw := middlleware.NewMiddleware(app) // TODO: Create a mock app context for testing
 		next := func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}

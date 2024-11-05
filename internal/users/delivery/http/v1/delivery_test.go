@@ -19,7 +19,10 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-	app := web.NewWebContext(configs.NewCondfig().Load())
+	pwd := "../../../../../"
+	cfg := configs.NewCondfig().LoadForTest(pwd)
+	app := web.NewWebContext(cfg)
+	app.InitLocales(pwd)
 	app.InitDB()
 
 	connect, err := app.DB().BeginTx(context.TODO(), nil)
@@ -42,7 +45,7 @@ func TestLogin(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		router := mux.NewRouter()
-		v1.SetupRoutes(router, nil)
+		v1.SetupRoutes(router, app)
 		router.ServeHTTP(w, req)
 
 		return w.Result()

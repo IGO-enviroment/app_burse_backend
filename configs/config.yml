@@ -3,8 +3,10 @@ web:
   host: 127.0.0.1
   token_secret: token_secret
   token_expiration: 86_400
-db_host: localhost
-db_port: 5432
-db_name: my_database
-db_user: my_user
-db_password: my_password
+db:
+  host: localhost
+  port: 5432
+  name: local-db
+  username: user
+  password: pass
+

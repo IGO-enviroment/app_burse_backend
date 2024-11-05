@@ -43,8 +43,8 @@ func (p *Postgres) Connect(host string, port int, user, password, dbname string)
 
 	for i := 0; i < p.connAttempts; i++ {
 		db, err = sqlx.Connect("postgres", fmt.Sprintf(
-			"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			host, port, user, password, dbname,
+			"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+			user, password, host, port, dbname,
 		))
 
 		if err == nil {
