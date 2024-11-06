@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -15,6 +17,17 @@ const (
 	defaultConnAttempts = 10
 	defaultConnTimeout  = 5
 )
+
+// Интерфейс для работы с базой данных.
+type Database interface {
+	sqlx.Preparer
+	sqlx.PreparerContext
+	sqlx.Ext
+	sqlx.ExtContext
+
+	BeginTxx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error)
+	Close() error
+}
 
 type Postgres struct {
 	maxPoolSize  int
@@ -37,7 +50,7 @@ func NewPostgres(options ...Option) *Postgres {
 }
 
 // Инициализация подключения.
-func (p *Postgres) Connect(host string, port int, user, password, dbname string) *sqlx.DB {
+func (p *Postgres) Connect(host string, port int, user, password, dbname string) Database {
 	var db *sqlx.DB
 	var err error
 

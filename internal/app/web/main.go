@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
 	"golang.org/x/text/language"
@@ -19,7 +18,7 @@ import (
 )
 
 type WebContext struct {
-	db        *sqlx.DB
+	db        postgres.Database
 	config    *configs.Config
 	log       *zap.Logger
 	localizer *i18n.Localizer
@@ -85,7 +84,7 @@ func (c *WebContext) Run() {
 	log.Fatal(srv.ListenAndServe())
 }
 
-func (c *WebContext) DB() *sqlx.DB {
+func (c *WebContext) DB() postgres.Database {
 	return c.db
 }
 

@@ -25,7 +25,7 @@ func TestLogin(t *testing.T) {
 	app.InitLocales(pwd)
 	app.InitDB()
 
-	connect, err := app.DB().BeginTx(context.TODO(), nil)
+	connect, err := app.DB().BeginTxx(context.TODO(), nil)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

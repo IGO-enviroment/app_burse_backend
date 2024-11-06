@@ -1,14 +1,13 @@
 package service
 
 import (
+	"app_burse_backend/pkg/postgres"
 	"database/sql"
 	"fmt"
-
-	"github.com/jmoiron/sqlx"
 )
 
 func GetByField(
-	db *sqlx.DB,
+	db postgres.Database,
 	field,
 	value interface{},
 	table string,
@@ -20,7 +19,7 @@ func GetByField(
 		}
 	}()
 
-	err = db.QueryRow(
+	err = db.QueryRowx(
 		fmt.Sprintf("SELECT * FROM %s WHERE %s = $1", table, field),
 		value,
 	).Scan(scanStruct)

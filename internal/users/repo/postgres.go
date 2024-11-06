@@ -3,16 +3,15 @@ package users_repository
 import (
 	"app_burse_backend/internal/domain"
 	"app_burse_backend/internal/service"
+	"app_burse_backend/pkg/postgres"
 	"fmt"
-
-	"github.com/jmoiron/sqlx"
 )
 
 type Repository struct {
-	db *sqlx.DB
+	db postgres.Database
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(db postgres.Database) *Repository {
 	return &Repository{db: db}
 }
 

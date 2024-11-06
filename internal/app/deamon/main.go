@@ -16,7 +16,7 @@ import (
 type Deamon struct {
 	config   *configs.Config
 	log      *zap.Logger
-	db       *sqlx.DB
+	db       postgres.Database
 	consumer *consumer.Consumer
 }
 
@@ -37,7 +37,7 @@ func (d *Deamon) Setup() error {
 
 	// Загрузка конфигурации очереди
 	d.consumer = consumer.NewConsumer(
-		consumer.WithDB(d.db),
+		consumer.WithDB(d.db.(*sqlx.DB)),
 		consumer.WithLogger(d.log),
 	)
 	jobs.RegisterJobs(d.consumer)
