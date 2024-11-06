@@ -1,8 +1,6 @@
 package postgres
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -24,9 +22,6 @@ type Database interface {
 	sqlx.PreparerContext
 	sqlx.Ext
 	sqlx.ExtContext
-
-	BeginTxx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error)
-	Close() error
 }
 
 type Postgres struct {

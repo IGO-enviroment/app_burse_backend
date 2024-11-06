@@ -38,16 +38,13 @@ func (r *Repository) GetUserByEmail(email string) (*domain.User, error) {
 }
 
 func (r *Repository) Create(fields []service.FieldDB) (int, error) {
-	mapper := service.NewMapperFields(fields...)
-	res, err := r.db.Exec(
-		fmt.Sprintf("INSERT INTO users (%s) VALUES (%s)", mapper.GetColumnNames(), mapper.GetPlaceholders()),
-		mapper.GetValues()...,
-	)
-	if err != nil {
-		return 0, err
-	}
+	var id int
 
-	id, err := res.LastInsertId()
+	mapper := service.NewMapperFields(fields...)
+	err := r.db.QueryRowx(
+		fmt.Sprintf("INSERT INTO users %s VALUES %s RETURNING id", mapper.GetColumnNames(), mapper.GetPlaceholders()),
+		mapper.GetValues()...,
+	).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
