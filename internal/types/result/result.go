@@ -1,23 +1,33 @@
-package service
+package types_result
+
+import (
+	types_item "app_burse_backend/internal/types/error_item"
+)
 
 type Result interface {
 	Success() bool
 
 	Data() interface{}
 
-	Errors() error
+	ErrorItem() *types_item.ErrorItem
 
 	Error() string
 }
 
 type ErrorResult struct {
-	DataErrors error
+	Exception *types_item.ErrorItem
 }
 
-func NewErrorResult(errors error) *ErrorResult {
-	return &ErrorResult{
-		DataErrors: errors,
+func NewErrorResult(options ...OptionResult) *ErrorResult {
+	e := &ErrorResult{
+		Exception: types_item.NewErrorItem(types_item.WithMsg("An error occurred.")),
 	}
+
+	for _, option := range options {
+		option(e)
+	}
+
+	return e
 }
 
 func (r *ErrorResult) Success() bool {
@@ -25,15 +35,15 @@ func (r *ErrorResult) Success() bool {
 }
 
 func (r *ErrorResult) Data() interface{} {
-	return nil
+	return r.Exception.Data()
 }
 
 func (r *ErrorResult) Error() string {
-	return r.DataErrors.Error()
+	return r.Exception.Error()
 }
 
-func (r *ErrorResult) Errors() error {
-	return r.DataErrors
+func (r *ErrorResult) ErrorItem() *types_item.ErrorItem {
+	return r.Exception
 }
 
 type SuccessResult struct {
@@ -54,7 +64,7 @@ func (r *SuccessResult) Data() interface{} {
 	return r.DataField
 }
 
-func (r *SuccessResult) Errors() error {
+func (r *SuccessResult) ErrorItem() *types_item.ErrorItem {
 	return nil
 }
 

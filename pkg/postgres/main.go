@@ -16,6 +16,14 @@ const (
 	defaultConnTimeout  = 5
 )
 
+// Интерфейс для работы с базой данных.
+type Database interface {
+	sqlx.Preparer
+	sqlx.PreparerContext
+	sqlx.Ext
+	sqlx.ExtContext
+}
+
 type Postgres struct {
 	maxPoolSize  int
 	connAttempts int
@@ -37,14 +45,14 @@ func NewPostgres(options ...Option) *Postgres {
 }
 
 // Инициализация подключения.
-func (p *Postgres) Connect(host string, port int, user, password, dbname string) *sqlx.DB {
+func (p *Postgres) Connect(host string, port int, user, password, dbname string) Database {
 	var db *sqlx.DB
 	var err error
 
 	for i := 0; i < p.connAttempts; i++ {
 		db, err = sqlx.Connect("postgres", fmt.Sprintf(
-			"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			host, port, user, password, dbname,
+			"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+			user, password, host, port, dbname,
 		))
 
 		if err == nil {

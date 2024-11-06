@@ -1,8 +1,13 @@
 web:
   port: 8080
   host: 127.0.0.1
-db_host: localhost
-db_port: 5432
-db_name: my_database
-db_user: my_user
-db_password: my_password
+  token_secret: token_secret
+  token_expiration: 86_400
+  cookies_field: auth_token
+db:
+  host: localhost
+  port: 5432
+  name: local-db
+  username: user
+  password: pass
+

@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3'
 
 services:
 
@@ -6,25 +6,13 @@ services:
     container_name: burse_pg
     image: postgres
     volumes:
-      - pg-data:/var/lib/postgresql/data
+      - pg-burse-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: 'user'
-      POSTGRES_PASSWORD: 'pass'
-      POSTGRES_DB: 'postgres'
+      - POSTGRES_DB=local-db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
     ports:
       - 5432:5432
 
-  # app:
-  #   build:
-  #     context: ../
-  #     dockerfile: Dockerfile
-  #   container_name: burse_app
-  #   ports:
-  #     - 8080:8080
-  #   expose:
-  #     - "8080"
-  #   depends_on:
-  #     - postgres
-
 volumes:
-  pg-data:
+  pg-burse-data:

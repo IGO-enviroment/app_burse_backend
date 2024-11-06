@@ -1,0 +1,6 @@
+errors:
+  unknown_error: Неизвестная ошибка 
+users:
+  errors:
+    login:
+      invalid_credentials: Почта или пароль введены неверно. Попробуйте ещё раз

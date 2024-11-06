@@ -18,7 +18,7 @@ func NewRepository(db *sqlx.DB) *Repository {
 func (r *Repository) GetById(id int) (*domain.Practice, error) {
 	var practice domain.Practice
 
-	err := service.GetById(r.db, id, domain.PracticeTable, &practice)
+	err := service.GetByField(r.db, "id", id, domain.PracticeTable, &practice)
 	if err != nil {
 		return nil, err
 	}

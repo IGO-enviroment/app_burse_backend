@@ -1,12 +1,12 @@
 package feedback_usecase
 
 import (
-	"app_burse_backend/internal/errors"
 	feedback_repository "app_burse_backend/internal/feedback/repo"
 	feedback_validates "app_burse_backend/internal/feedback/validates"
 	practice_repo "app_burse_backend/internal/practice/repo"
 	profile_repo "app_burse_backend/internal/profile/repo"
-	"app_burse_backend/internal/service"
+	types_item "app_burse_backend/internal/types/error_item"
+	types_result "app_burse_backend/internal/types/result"
 )
 
 type CreateEntity struct {
@@ -45,77 +45,65 @@ func NewUsecase(
 
 // Предприятие создаёт отзыв по указанному студенту.
 func (u *CreateService) CreateForStudentByEnterprise() error {
-	err := u.validate()
-	if err != nil {
-		return service.NewErrorResult(err)
+	errItem := u.validate()
+	if errItem != nil {
+		return types_result.NewErrorResult(types_result.ErrorWithErrorItem(errItem))
 	}
 
-	err = u.feedbackRepo.Create()
+	err := u.feedbackRepo.Create()
 	if err != nil {
-		return service.NewErrorResult(errors.NewErrorItem(errors.WithMessage("Ошибка при создании отзыва")))
+		return types_result.NewErrorResult(types_result.ErrorWithMsg("Ошибка при создании отзыва"))
 	}
 
-	return service.NewSuccessResult("Отзыв успешно создан")
+	return types_result.NewSuccessResult("Отзыв успешно создан")
 }
 
-func (u *CreateService) validate() error {
+func (u *CreateService) validate() *types_item.ErrorItem {
 	// Проверка валидности входных данных
 	if !feedback_validates.RaitingValidate(u.entity.Rating) {
-		return errors.NewErrorItem(
-			errors.WithErrors(
-				[]errors.ErrorField{
-					errors.ErrorField{Field: "rating", Message: "Недопустимый рейтинг"},
-				},
+		return types_item.NewErrorItem(
+			types_item.WithErrors(
+				[][]string{{"rating", "Недопустимый рейтинг"}},
 			),
 		)
 	}
 	if !feedback_validates.CommentValidate(u.entity.Comment) {
-		return errors.NewErrorItem(
-			errors.WithErrors(
-				[]errors.ErrorField{
-					errors.ErrorField{Field: "comment", Message: "Комментарий должен быть от 10 до 3000 символов"},
-				},
+		return types_item.NewErrorItem(
+			types_item.WithErrors(
+				[][]string{{"comment", "Комментарий должен быть от 10 до 3000 символов"}},
 			),
 		)
 	}
 	if !feedback_validates.RecommendationsValidate(&u.entity.Recommendation) {
-		return errors.NewErrorItem(
-			errors.WithErrors(
-				[]errors.ErrorField{
-					errors.ErrorField{Field: "recommendation", Message: "Максимальная длина рекомендаций - 2000 символов"},
-				},
+		return types_item.NewErrorItem(
+			types_item.WithErrors(
+				[][]string{{"recommendation", "Максимальная длина рекомендаций - 2000 символов"}},
 			),
 		)
 	}
 
 	practice, err := u.practiceRepo.GetById(u.entity.PracticeId)
 	if err != nil || practice == nil {
-		return errors.NewErrorItem(
-			errors.WithErrors(
-				[]errors.ErrorField{
-					errors.ErrorField{Field: "practiceId", Message: "Нет такой практики"},
-				},
+		return types_item.NewErrorItem(
+			types_item.WithErrors(
+				[][]string{{"practiceId", "Нет такой практики"}},
 			),
 		)
 	}
 
 	if practice.EnterpriseId != u.entity.EnterpriseId {
-		return errors.NewErrorItem(
-			errors.WithErrors(
-				[]errors.ErrorField{
-					errors.ErrorField{Field: "practiceId", Message: "Отзыв может быть создан только для практики вашего предприятия"},
-				},
+		return types_item.NewErrorItem(
+			types_item.WithErrors(
+				[][]string{{"practiceId", "Отзыв может быть создан только для практики вашего предприятия"}},
 			),
 		)
 	}
 
 	profile, err := u.profileRepo.GetById(u.entity.ProfileId)
 	if err != nil || profile == nil {
-		return errors.NewErrorItem(
-			errors.WithErrors(
-				[]errors.ErrorField{
-					errors.ErrorField{Field: "profileId", Message: "Нет такого профиля"},
-				},
+		return types_item.NewErrorItem(
+			types_item.WithErrors(
+				[][]string{{"profileId", "Нет такого профиля"}},
 			),
 		)
 	}

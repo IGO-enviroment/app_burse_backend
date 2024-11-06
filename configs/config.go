@@ -1,39 +1,65 @@
 package configs
 
 import (
-	"fmt"
-	"log"
-	"os"
-
-	"gopkg.in/yaml.v3"
+	"github.com/spf13/viper"
 )
 
-type Config struct {
-	DBHost string `yaml:"db_host"`
-	DBPort int    `yaml:"db_port"`
-
-	Web WebConfig `yaml:"web"`
+type DBConfig struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
 }
+
+type Config struct {
+	DB  DBConfig  `json:"db"`
+	Web WebConfig `json:"web"`
+}
+
+const (
+	defaultConfigsDir = "./configs"
+	configType        = "yml"
+	configName        = "config"
+)
 
 func NewCondfig() *Config {
 	return &Config{}
 }
 
 func (c *Config) Load() *Config {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
+	viper.AddConfigPath(defaultConfigsDir)
 
-	ymlFile, err := os.ReadFile(fmt.Sprintf("%s/configs/config.yml", pwd))
+	err := c.readConfigs()
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = yaml.Unmarshal(ymlFile, c)
-	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return c
+}
+
+func (c *Config) LoadForTest(currentPwd string) *Config {
+	viper.AddConfigPath(currentPwd + defaultConfigsDir)
+
+	err := c.readConfigs()
+	if err != nil {
+		panic(err)
+	}
+
+	return c
+}
+
+func (c *Config) readConfigs() error {
+	viper.SetConfigName(configName)
+	viper.SetConfigType(configType)
+
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
+
+	if err := viper.Unmarshal(&c); err != nil {
+		return err
+	}
+
+	return nil
 }

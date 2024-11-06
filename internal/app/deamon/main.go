@@ -16,7 +16,7 @@ import (
 type Deamon struct {
 	config   *configs.Config
 	log      *zap.Logger
-	db       *sqlx.DB
+	db       postgres.Database
 	consumer *consumer.Consumer
 }
 
@@ -28,14 +28,16 @@ func NewInstance(config *configs.Config) *Deamon {
 
 func (d *Deamon) Setup() error {
 	// Подключение к базе данных
-	d.db = postgres.NewPostgres().Connect(d.config.DBHost, d.config.DBPort, "user", "pass", "postgres")
+	d.db = postgres.NewPostgres().Connect(
+		d.config.DB.Host, d.config.DB.Port, d.config.DB.Username, d.config.DB.Password, d.config.DB.Name,
+	)
 
 	// Загрузка конфигурации логгера
 	d.log = logger.NewLogger(logger.WithDevelopment(true), logger.WithLevel(zap.DebugLevel)).Build()
 
 	// Загрузка конфигурации очереди
 	d.consumer = consumer.NewConsumer(
-		consumer.WithDB(d.db),
+		consumer.WithDB(d.db.(*sqlx.DB)),
 		consumer.WithLogger(d.log),
 	)
 	jobs.RegisterJobs(d.consumer)
