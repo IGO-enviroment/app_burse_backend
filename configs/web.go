@@ -6,4 +6,6 @@ type WebConfig struct {
 
 	TokenSecret     string `json:"token_secret"`
 	TokenExpiration int    `json:"token_expiration"`
+
+	CookiesField string `json:"cookies_field"`
 }

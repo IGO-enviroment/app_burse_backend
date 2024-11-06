@@ -18,7 +18,7 @@ func TestNotLoggedIn(t *testing.T) {
 	app := web.NewWebContext(cfg)
 
 	t.Run("Вернет 401 при отсутствии токена", func(t *testing.T) {
-		mw := middlleware.NewMiddleware(app) // TODO: Create a mock app context for testing
+		mw := middlleware.NewMiddleware(app)
 		next := func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}
@@ -32,7 +32,7 @@ func TestNotLoggedIn(t *testing.T) {
 	})
 
 	t.Run("Продолжит обработку запроса при валидном токене", func(t *testing.T) {
-		mw := middlleware.NewMiddleware(app) // TODO: Create a mock app context for testing
+		mw := middlleware.NewMiddleware(app)
 		next := func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}

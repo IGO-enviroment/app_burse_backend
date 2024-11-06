@@ -46,7 +46,7 @@ func TestTokenFromRequest_MissingAuthorizationHeader(t *testing.T) {
 	}
 
 	tokenService := tokenservice.NewTokenService("testsecret", 3600)
-	token, err := tokenService.TokenFromRequest(req)
+	token, err := tokenService.TokenFromRequest(req, "Authorization", "")
 
 	t.Run("вернуть nil token", func(t *testing.T) {
 		assert.Equal(t, "", token)
@@ -66,7 +66,7 @@ func TestTokenFromRequest_InvalidAuthorizationHeaderFormat(t *testing.T) {
 	req.Header.Set("Authorization", "InvalidHeaderFormat")
 
 	tokenService := tokenservice.NewTokenService("testsecret", 3600)
-	token, err := tokenService.TokenFromRequest(req)
+	token, err := tokenService.TokenFromRequest(req, "Authorization", "")
 
 	t.Run("вернет пустой токен", func(t *testing.T) {
 		assert.Equal(t, "", token)
@@ -87,7 +87,7 @@ func TestTokenFromRequest_ValidAuthorizationHeader(t *testing.T) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", expectToken))
 
 	tokenService := tokenservice.NewTokenService("testsecret", 3600)
-	token, err := tokenService.TokenFromRequest(req)
+	token, err := tokenService.TokenFromRequest(req, "Authorization", "")
 
 	t.Run("вернуть расшифрованный токен", func(t *testing.T) {
 		assert.Equal(t, expectToken, token)

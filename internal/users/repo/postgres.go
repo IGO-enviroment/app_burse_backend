@@ -29,7 +29,7 @@ func (r *Repository) GetById(id int) (*domain.User, error) {
 func (r *Repository) GetUserByEmail(email string) (*domain.User, error) {
 	var user domain.User
 
-	err := service.GetByField(r.db, domain.UserTable, "email", email, &user)
+	err := service.GetByField(r.db, "email", email, domain.UserTable, &user)
 	if err != nil {
 		return nil, err
 	}

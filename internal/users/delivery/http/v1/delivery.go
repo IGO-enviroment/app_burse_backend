@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"go.uber.org/zap"
 )
 
@@ -69,6 +70,21 @@ func (d *Delivery) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	store := sessions.NewCookieStore([]byte(d.appContext.Configs().Web.TokenSecret))
+	session, err := store.Get(r, d.appContext.Configs().Web.CookiesField)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	session.Values["user_id"] = result.Data()
+	session.Options.MaxAge = d.appContext.Configs().Web.TokenExpiration
+
+	if err := session.Save(r, w); err != nil {
+		http.Error(w, "Error saving session", http.StatusInternalServerError)
+		return
+	}
+
 	d.appContext.Logger().Info(
 		"[users.login] Пользователь авторизован.",
 		zap.String("email", request.Email),
@@ -76,5 +92,4 @@ func (d *Delivery) Login(w http.ResponseWriter, r *http.Request) {
 	)
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(result.Data())
 }

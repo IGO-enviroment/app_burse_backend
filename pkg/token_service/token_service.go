@@ -2,6 +2,7 @@ package tokenservice
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -56,13 +57,26 @@ func (s *TokenService) ParseToken(tokenString string) (*jwt.Token, error) {
 	return token, err
 }
 
-func (s *TokenService) TokenFromRequest(r *http.Request) (string, error) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
+func (s *TokenService) TokenFromRequest(r *http.Request, headerField string, cookieField string) (string, error) {
+	var field string
+
+	if headerField != "" {
+		field = r.Header.Get(headerField)
+	} else {
+		cookie, err := r.Cookie(cookieField)
+		if err != nil {
+			return "", err
+		}
+
+		field = cookie.Value
+	}
+
+	fmt.Println("field", field)
+	if field == "" {
 		return "", errors.New("authorization header is missing")
 	}
 
-	parts := strings.SplitN(authHeader, " ", 2)
+	parts := strings.SplitN(field, " ", 2)
 	if len(parts) != 2 || parts[0] != "Bearer" {
 		return "", errors.New("authorization header format is invalid")
 	}

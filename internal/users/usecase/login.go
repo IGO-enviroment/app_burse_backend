@@ -5,7 +5,6 @@ import (
 	types_result "app_burse_backend/internal/types/result"
 	users_entity "app_burse_backend/internal/users/entity"
 	users_repository "app_burse_backend/internal/users/repo"
-	tokenservice "app_burse_backend/pkg/token_service"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -38,17 +37,5 @@ func (u *LoginUsecase) Call() types_result.Result {
 		)
 	}
 
-	token, err := u.generateHeaderToken(user.ID)
-	if err != nil {
-		return types_result.NewErrorResult(
-			types_result.ErrorWithMsg(u.app.Locales().MustLocalize(&i18n.LocalizeConfig{MessageID: "errors.unknown_error"})),
-		)
-	}
-
-	return types_result.NewSuccessResult(token)
-}
-
-func (u *LoginUsecase) generateHeaderToken(userID int) (string, error) {
-	сfg := u.app.Configs().Web
-	return tokenservice.NewTokenService(сfg.TokenSecret, сfg.TokenExpiration).GenerateToken(userID)
+	return types_result.NewSuccessResult(user.ID)
 }

@@ -22,7 +22,7 @@ func GetByField(
 	err = db.QueryRowx(
 		fmt.Sprintf("SELECT * FROM %s WHERE %s = $1", table, field),
 		value,
-	).Scan(scanStruct)
+	).StructScan(scanStruct)
 	if err == sql.ErrNoRows {
 		return fmt.Errorf("record not found")
 	} else if err != nil {

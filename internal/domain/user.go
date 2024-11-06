@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"database/sql"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -9,17 +10,17 @@ import (
 const UserTable = "users"
 
 type User struct {
-	ID int `json:"id"`
+	ID int `json:"id" db:"id"`
 
-	Email          string `json:"email"`
-	DigestPassword string `json:"-"`
+	Email          string `json:"email" db:"email"`
+	DigestPassword string `json:"-" db:"digest_password"`
 
-	FirstName  string `json:"first_name"`
-	LastName   string `json:"last_name"`
-	MiddleName string `json:"middle_name"`
+	FirstName  sql.NullString `json:"first_name" db:"first_name"`
+	LastName   sql.NullString `json:"last_name" db:"last_name"`
+	MiddleName sql.NullString `json:"middle_name" db:"middle_name"`
 
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 func (u *User) CheckPassword(password, hash string) bool {

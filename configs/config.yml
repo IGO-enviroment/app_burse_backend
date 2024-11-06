@@ -3,6 +3,7 @@ web:
   host: 127.0.0.1
   token_secret: token_secret
   token_expiration: 86_400
+  cookies_field: auth_token
 db:
   host: localhost
   port: 5432
